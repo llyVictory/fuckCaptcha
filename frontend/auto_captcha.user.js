@@ -15,24 +15,11 @@
 (function() {
     'use strict';
 
-    // 【！在此填入你的云服务器的 OCR 接口地址！】
-    // 如果部署在你自己的服务器上，修改这里，例如："http://123.45.67.89:8000"
-    // 注意结尾不要有反斜杠 "/"
-    let OCR_SERVER_URL = GM_getValue("ocr_server_host", "http://127.0.0.1:8005");
+    // 【核心后端定位器】由域名 + Nginx 反向代理接管
+    // 注意：利用您的 https://pocapola.xyz 域名，将 API 指向其 /api/ 子路径
+    const OCR_SERVER_URL = "https://pocapola.xyz/api/vcode_ocr";
+    const AUTH_TOKEN = "fc_auth_token_pocapola_9527";
 
-    // 为懂行的稍微进阶的用户配置一个注册表单弹框可以直接改后台 IP
-    GM_registerMenuCommand("网络项: 设置你的自用主推服务器 IP", () => {
-        let newUrl = prompt("请填写您的独立 IP 及端口后台地址 (例如 http://192.168.1.1:8000):", OCR_SERVER_URL);
-        if (newUrl) {
-            let processedUrl = newUrl.trim();
-            if (processedUrl.endsWith('/')) {
-                processedUrl = processedUrl.slice(0, -1);
-            }
-            GM_setValue("ocr_server_host", processedUrl);
-            OCR_SERVER_URL = processedUrl;
-            alert("[成功] 后台服务器定位更换成功！请按 F5 刷新重载此页。");
-        }
-    });
 
     // 第一大系统：仿生视觉侦测系统（寻找可疑的是验证码的地方）
     function isProbableCaptcha(img) {
@@ -170,9 +157,10 @@
                 // 向远端 FastAPI 的端口发冲锋信标
                 GM_xmlhttpRequest({
                     method: "POST",
-                    url: OCR_SERVER_URL + "/api/ocr/base64",
+                    url: OCR_SERVER_URL + "/base64",
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "X-Token": AUTH_TOKEN
                     },
                     data: JSON.stringify({ image_base64: base64 }),
                     onload: function(res) {

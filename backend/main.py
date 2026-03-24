@@ -3,6 +3,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import ddddocr
 from pydantic import BaseModel
+from typing import Optional
+from fastapi import Header
+
+# 这里的暗号你可以自己随意修改，只要跟油猴脚本对齐即可
+FUCK_CAPTCHA_TOKEN = "fc_auth_token_pocapola_9527"
 
 # 初始化 ddddocr 并关闭控制台广告信息展示
 ocr_engine = ddddocr.DdddOcr(show_ad=False)
@@ -24,10 +29,15 @@ class ImageRequest(BaseModel):
     image_base64: str
 
 @app.post("/api/ocr/base64")
-async def ocr_by_base64(req: ImageRequest):
+async def ocr_by_base64(req: ImageRequest, x_token: Optional[str] = Header(None)):
     """
     接受客户端传递的验证码图片 Base64 编码，执行识别并返回。
     """
+    # 如果暗号不对，直接拦截并报 403 权限错误
+    if x_token != FUCK_CAPTCHA_TOKEN:
+        print(f"[拒绝访问] 检测到非法请求尝试，提供的 Token 是: {x_token}")
+        raise HTTPException(status_code=403, detail="非法请求，暗号不对")
+
     try:
         b64_data = req.image_base64
         

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  ocr-service:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fuck-captcha-ocr
+    ports:
+      - "8005:8005"
+    restart: always
+    # 如果您的服务器带宽较低，可以加上这个限制
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

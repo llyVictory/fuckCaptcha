@@ -28,7 +28,7 @@ app.add_middleware(
 class ImageRequest(BaseModel):
     image_base64: str
 
-@app.post("/api/ocr/base64")
+@app.post("/base64")
 async def ocr_by_base64(req: ImageRequest, x_token: Optional[str] = Header(None)):
     """
     接受客户端传递的验证码图片 Base64 编码，执行识别并返回。
